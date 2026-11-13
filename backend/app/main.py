@@ -11,8 +11,6 @@ from slowapi.errors import RateLimitExceeded
 
 from app.config import settings
 from app.ratelimit import limiter
-from app.cache import sample_cache
-from app.services.tts import synthesize_to_bytes
 from app.routers import health, transcribe, chat, tts, samples
 
 logging.basicConfig(
@@ -22,33 +20,9 @@ logging.basicConfig(
 logger = logging.getLogger("voicebot")
 
 
-async def prewarm_sample_cache():
-    """Asynchronously pre-synthesize audio for starter questions in the background."""
-    if os.environ.get("PYTEST_CURRENT_TEST") or os.environ.get("APP_ENV") == "testing" or settings.APP_ENV in ("testing", "test"):
-        logger.info("Skipping sample audio pre-warming in testing mode.")
-        return
-
-    logger.info("Starting background pre-warming of sample audio cache...")
-    for item in sample_cache.samples:
-        sample_id = item["id"]
-        answer_text = item["answer"]
-        try:
-            audio_bytes = await synthesize_to_bytes(answer_text)
-            sample_cache.store_audio(sample_id, audio_bytes)
-            logger.info(f"Pre-warmed audio cache for sample: {sample_id} ({len(audio_bytes)} bytes)")
-        except Exception as e:
-            logger.warning(f"Failed to pre-warm audio for {sample_id}: {e}")
-    logger.info("Sample audio pre-warming complete.")
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info(f"Starting VoiceBot API (env: {settings.APP_ENV})")
-    # Launch cache pre-warming in background only when explicitly enabled
-    if settings.PREWARM_AUDIO_CACHE and not (
-        os.environ.get("PYTEST_CURRENT_TEST") or settings.APP_ENV in ("testing", "test")
-    ):
-        asyncio.create_task(prewarm_sample_cache())
     yield
     logger.info("Shutting down VoiceBot API...")
 

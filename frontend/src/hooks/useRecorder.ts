@@ -127,8 +127,8 @@ export function useRecorder(): UseRecorderResult {
         cleanupStream();
         setIsRecording(false);
 
-        // Discard recordings under ~0.5s to prevent accidental taps
-        if (duration < 0.5) {
+        // Discard recordings under ~0.35s to prevent accidental taps
+        if (duration < 0.35) {
           setRecorderError("Didn't catch that, please tap and speak a full sentence.");
           resolve(null);
           return;
@@ -139,7 +139,14 @@ export function useRecorder(): UseRecorderResult {
         resolve({ blob: finalBlob, mimeType });
       };
 
-      recorder.stop();
+      if (recorder.state === 'recording') {
+        try {
+          recorder.requestData();
+        } catch {
+          // ignore
+        }
+        recorder.stop();
+      }
     });
   }, [cleanupStream]);
 

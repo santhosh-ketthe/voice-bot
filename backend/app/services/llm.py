@@ -8,7 +8,6 @@ from openai import AsyncOpenAI, APIConnectionError, RateLimitError, APITimeoutEr
 
 from app.config import settings
 from app.persona.prompt import build_system_prompt
-from app.cache import sample_cache
 
 logger = logging.getLogger(__name__)
 
@@ -113,13 +112,12 @@ async def _call_gemini_fallback(system_prompt: str, messages: List[Dict[str, str
 
 
 async def generate_chat_response(
-    incoming_messages: List[Dict[str, str]], check_cache: bool = True
+    incoming_messages: List[Dict[str, str]]
 ) -> Dict[str, any]:
     """
     Generate an answer following the candidate persona.
-    1. Check fuzzy match against pre-warmed samples for near-instant response.
-    2. Try Groq responses.create with openai/gpt-oss-20b.
-    3. On failure, fall back to Google Gemini Flash.
+    Directly queries Groq responses.create with openai/gpt-oss-20b (no cache interception).
+    On failure, falls back to Google Gemini Flash.
     """
     # 1. Sanitize & filter incoming messages
     filtered_history = []
@@ -143,27 +141,10 @@ async def generate_chat_response(
     # Trim to last MAX_MESSAGE_HISTORY turns
     trimmed_history = filtered_history[-settings.MAX_MESSAGE_HISTORY :]
 
-    # 2. Check for sample question match on the latest user message
-    last_user_message = ""
-    for msg in reversed(trimmed_history):
-        if msg["role"] == "user":
-            last_user_message = msg["content"]
-            break
-
-    if check_cache and last_user_message:
-        matched_sample = sample_cache.match_question(last_user_message)
-        if matched_sample:
-            logger.info(f"Serving pre-warmed cached response for '{last_user_message}'")
-            return {
-                "answer": matched_sample["answer"],
-                "source": "pre_warmed_cache",
-                "sample_id": matched_sample["id"],
-            }
-
-    # 3. Assemble system prompt
+    # 2. Assemble system prompt
     system_prompt = build_system_prompt()
 
-    # 4. Attempt Groq first (using client.responses.create with openai/gpt-oss-20b)
+    # 3. Query Groq first (using client.responses.create with openai/gpt-oss-20b)
     try:
         raw_answer = await _call_groq_llm(system_prompt, trimmed_history)
         clean_answer = clean_for_speech(raw_answer)

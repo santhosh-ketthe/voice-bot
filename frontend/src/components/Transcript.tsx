@@ -62,7 +62,7 @@ export const Transcript: React.FC<TranscriptProps> = ({ messages, isProcessing =
   }
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+    <div className="flex-1 overflow-y-auto px-4 sm:px-8 md:px-12 py-5 space-y-4 w-full max-w-6xl mx-auto">
       {messages.map((msg) => {
         const isUser = msg.role === 'user';
 

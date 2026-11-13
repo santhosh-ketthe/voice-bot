@@ -34,14 +34,17 @@ def get_groq_client() -> groq.AsyncGroq:
 )
 async def _execute_transcription(audio_bytes: bytes, filename: str) -> str:
     client = get_groq_client()
+    logger.info(f"Sending audio to Groq Whisper ({len(audio_bytes)} bytes, filename: {filename})...")
     transcription = await client.audio.transcriptions.create(
         file=(filename, audio_bytes),
         model=settings.GROQ_WHISPER_MODEL,
         response_format="json",
-        language="en",
         temperature=0.0,
+        prompt="Santhosh, AI engineer, Covalense Global, Generative AI, LLMs, voicebot, CUDA, RAG, Telugu, Telangana, Hyderabad.",
     )
-    return transcription.text.strip()
+    result_text = transcription.text.strip()
+    logger.info(f"Groq Whisper decoded text: '{result_text}'")
+    return result_text
 
 
 async def transcribe_audio(audio_bytes: bytes, original_filename: str = "audio.webm") -> str:

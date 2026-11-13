@@ -3,7 +3,6 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.services.llm import clean_for_speech
 from app.persona.prompt import build_system_prompt
-from app.cache import sample_cache
 
 client = TestClient(app)
 
@@ -27,27 +26,6 @@ def test_system_prompt_builder():
     assert len(prompt) > 200
 
 
-def test_sample_cache_matching():
-    # Exact or near exact query
-    match1 = sample_cache.match_question("Tell me about yourself and your background.")
-    assert match1 is not None
-    assert match1["id"] == "intro"
-
-    # Colloquial alias
-    match2 = sample_cache.match_question("can you tell me about your background please?")
-    assert match2 is not None
-    assert match2["id"] == "intro"
-
-    # Superpower question
-    match3 = sample_cache.match_question("What is your biggest superpower?")
-    assert match3 is not None
-    assert match3["id"] == "superpower"
-
-    # Completely unrelated query shouldn't false-match
-    no_match = sample_cache.match_question("What is the recipe for chocolate chip cookies?")
-    assert no_match is None
-
-
 def test_samples_endpoint():
     response = client.get("/api/samples")
     assert response.status_code == 200
@@ -58,22 +36,8 @@ def test_samples_endpoint():
     assert "intro" in ids
     assert "superpower" in ids
     assert "growth_areas" in ids
-
-
-def test_chat_cached_question():
-    # Chatting with a sample question triggers instant cached response
-    payload = {
-        "messages": [
-            {"role": "user", "content": "What is your superpower as an engineer?"}
-        ]
-    }
-    response = client.post("/api/chat", json=payload)
-    assert response.status_code == 200
-    data = response.json()
-    assert "answer" in data
-    assert data["source"] == "pre_warmed_cache"
-    assert data["sample_id"] == "superpower"
-    assert "sub-600ms" in data["answer"]
+    assert "pushing_limits" in ids
+    assert "why_genai" in ids
 
 
 def test_chat_empty_messages_validation():
@@ -91,18 +55,3 @@ def test_chat_forbid_system_role_injection():
     }
     response = client.post("/api/chat", json=payload)
     assert response.status_code == 422
-
-
-def test_fuzzy_matching_all_samples():
-    # Test all 5 categories
-    queries_and_expected = [
-        ("can you introduce yourself?", "intro"),
-        ("what is your greatest strength as an engineer?", "superpower"),
-        ("where do you need to improve?", "growth_areas"),
-        ("tell me about a mistake you learned from", "pushing_limits"),
-        ("why do you love generative ai?", "why_genai"),
-    ]
-    for query, expected_id in queries_and_expected:
-        matched = sample_cache.match_question(query)
-        assert matched is not None, f"Query '{query}' failed to match"
-        assert matched["id"] == expected_id, f"Query '{query}' matched '{matched['id']}' instead of '{expected_id}'"

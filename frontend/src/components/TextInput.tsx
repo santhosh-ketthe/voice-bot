@@ -49,9 +49,10 @@ export const TextInput: React.FC<TextInputProps> = ({
   };
 
   return (
-    <div className="w-full px-4 py-2.5 bg-slate-950/95 border-t border-slate-900/80 backdrop-blur-md">
-      {/* If actively recording audio, show the recording toolbar */}
-      {state === 'listening' ? (
+    <div className="w-full bg-slate-950/95 border-t border-slate-900/80 backdrop-blur-md">
+      <div className="max-w-6xl mx-auto px-4 sm:px-8 md:px-12 py-3">
+        {/* If actively recording audio, show the recording toolbar */}
+        {state === 'listening' ? (
         <div className="flex items-center justify-between gap-3 px-4 py-2 rounded-2xl bg-slate-900/90 border border-rose-500/30 shadow-lg shadow-rose-500/10 animate-in fade-in">
           {/* Live recording indicator */}
           <div className="flex items-center gap-2.5 text-rose-400 text-xs font-semibold">
@@ -137,6 +138,7 @@ export const TextInput: React.FC<TextInputProps> = ({
           </button>
         </form>
       )}
+      </div>
     </div>
   );
 };

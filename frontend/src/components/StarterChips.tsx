@@ -26,7 +26,7 @@ export const StarterChips: React.FC<StarterChipsProps> = ({
   }
 
   return (
-    <div className="w-full px-4 py-2">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-8 md:px-12 py-2">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
           Suggested Questions

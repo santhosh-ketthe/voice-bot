@@ -50,9 +50,9 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen max-w-2xl mx-auto bg-slate-950 text-slate-100 border-x border-slate-900/80 shadow-2xl overflow-hidden">
+    <div className="flex flex-col h-screen w-full bg-slate-950 text-slate-100 overflow-hidden">
       {/* Header Bar */}
-      <header className="px-5 py-3.5 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md flex items-center justify-between z-20">
+      <header className="w-full px-6 py-3.5 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md flex items-center justify-between z-20">
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center font-bold text-base text-white shadow-md shadow-indigo-500/20">
