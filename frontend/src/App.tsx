@@ -167,7 +167,7 @@ export const App: React.FC = () => {
 
             <div className="space-y-3 text-xs text-slate-300 leading-relaxed">
               <p>
-                <strong className="text-white">Real-Time Voice Pipeline:</strong> Uses browser MediaRecorder to capture audio, streamed to Groq Whisper Turbo for sub-second STT, evaluated against Groq Llama 3.3 70B (with Gemini Flash fallback), and synthesized via Edge-TTS.
+                <strong className="text-white">Real-Time Voice Pipeline:</strong> Uses browser MediaRecorder to capture audio, streamed to Groq Whisper Turbo for sub-second STT, evaluated against Groq GPT-OSS 20B (with Gemini Flash fallback), and synthesized via Edge-TTS.
               </p>
               <p>
                 <strong className="text-white">Grounding & Persona:</strong> Grounded strictly in Santhosh's verified engineering career (B.Tech, 3 years at Covalense Global, specialized in GenAI & low-latency voice bots).

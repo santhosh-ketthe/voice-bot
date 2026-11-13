@@ -1,6 +1,6 @@
 # 🎙️ Santhosh — Interactive Voice AI Assistant
 
-A production-grade, low-latency Voice Bot built with **React (Vite + TypeScript)** and **FastAPI**. It showcases an interactive candidate persona grounded in real engineering experience, featuring speech-to-text with Groq Whisper, dual-provider conversational reasoning (Groq Llama 3.3 70B with Gemini Flash fallback), and real-time audio synthesis using Edge-TTS.
+A production-grade, low-latency Voice Bot built with **React (Vite + TypeScript)** and **FastAPI**. It showcases an interactive candidate persona grounded in real engineering experience, featuring speech-to-text with Groq Whisper, dual-provider conversational reasoning (Groq `openai/gpt-oss-20b` via OpenAI Responses API with Gemini Flash fallback), and real-time audio synthesis using Edge-TTS.
 
 ---
 
@@ -17,7 +17,7 @@ React Client (MediaRecorder / AudioContext)
        │
        ├──► 2. POST /api/chat { messages }
        │       ├──► In-Memory Fuzzy Cache Match (Instant < 20ms)
-       │       ├──► Primary: Groq Llama 3.3 70B Versatile
+       │       ├──► Primary: Groq (`openai/gpt-oss-20b` via client.responses.create)
        │       └──► Fallback: Google Gemini Flash (REST via httpx) ──► { answer }
        │
        └──► 3. POST /api/tts { text, sample_id }
@@ -30,7 +30,7 @@ Plays audio blob (with iOS Web Audio unlock; falls back to browser speechSynthes
 
 ## 2. Key Highlights & Production Reliability
 
-- **Dual-Provider LLM Resilience**: Primary inference runs on **Groq Llama 3.3 70B** (`max_tokens: 160`, `temp: 0.7`). If rate limits or timeouts occur, it automatically cascades via Tenacity retries to **Google Gemini Flash**.
+- **Dual-Provider LLM Resilience**: Primary inference runs on **Groq with `openai/gpt-oss-20b`** using the OpenAI Responses API (`client.responses.create`) with `base_url="https://api.groq.com/openai/v1"`. If rate limits or timeouts occur, it automatically cascades via Tenacity retries to **Google Gemini Flash**.
 - **Instant Pre-Warmed Response Cache**: The 5 canonical starter interview questions use fuzzy string matching and token overlap to return pre-computed text and audio instantly with zero API overhead.
 - **Microphone & Codec Robustness**: Detects browser codecs (`audio/webm;codecs=opus` on Chromium/Firefox, `audio/mp4` on Safari/iOS). Rejects recordings < 0.5s to prevent false triggers, and auto-stops after 30s.
 - **Audio Context Unlock**: Automatically unlocks the browser Web Audio context on the user's initial interaction to comply with iOS Safari and mobile Chrome autoplay policies.

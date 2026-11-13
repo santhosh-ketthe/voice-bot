@@ -30,7 +30,7 @@ export const Transcript: React.FC<TranscriptProps> = ({ messages, isProcessing =
       return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-violet-500/10 text-violet-300 border border-violet-500/20">
           <Zap className="w-2.5 h-2.5" />
-          Groq Llama 3.3 70B
+          Groq GPT-OSS 20B
         </span>
       );
     }

@@ -46,7 +46,7 @@ export const MicButton: React.FC<MicButtonProps> = ({
         return {
           icon: <Sparkles className="w-4 h-4 text-amber-200 animate-spin" />,
           label: 'Formulating answer...',
-          hint: 'Llama 3.3 70B reasoning',
+          hint: 'Groq GPT-OSS 20B reasoning',
           ringColor: 'border-amber-500 bg-amber-600/90 text-white shadow-md shadow-amber-500/40',
           pulsingClass: 'animate-pulse',
         };

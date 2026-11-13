@@ -29,7 +29,8 @@ class Settings(BaseSettings):
     TEMPERATURE: float = 0.7
 
     # Models
-    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_BASE_URL: str = "https://api.groq.com/openai/v1"
+    GROQ_MODEL: str = "openai/gpt-oss-20b"
     GROQ_WHISPER_MODEL: str = "whisper-large-v3-turbo"
     GEMINI_MODEL: str = "gemini-1.5-flash"
 
