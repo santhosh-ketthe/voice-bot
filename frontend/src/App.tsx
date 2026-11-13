@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useVoiceBot } from './hooks/useVoiceBot';
-import { MicButton } from './components/MicButton';
 import { Transcript } from './components/Transcript';
 import { StarterChips } from './components/StarterChips';
 import { StatusBar } from './components/StatusBar';
@@ -105,6 +104,24 @@ export const App: React.FC = () => {
         <Transcript messages={messages} isProcessing={isProcessing} />
       </main>
 
+      {/* Active Speech Bar (Only appears when assistant is speaking) */}
+      {isSpeaking && (
+        <div className="px-4 py-2 flex items-center justify-between bg-indigo-950/70 border-t border-indigo-500/20 text-indigo-300 text-xs animate-in fade-in">
+          <div className="flex items-center gap-2.5">
+            <AudioVisualizer active={true} color="indigo" bars={5} />
+            <span className="font-medium tracking-wide">Santhosh is speaking...</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleStop}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-900 border border-indigo-500/30 hover:bg-rose-500/20 hover:text-rose-300 transition-colors text-[11px]"
+          >
+            <Square className="w-3 h-3 fill-current" />
+            <span>Stop Audio</span>
+          </button>
+        </div>
+      )}
+
       {/* Suggested Starter Chips */}
       <StarterChips
         samples={samples}
@@ -112,57 +129,21 @@ export const App: React.FC = () => {
         disabled={isRecording || isProcessing || isSpeaking}
       />
 
-      {/* Interactive Voice Controls Section */}
-      <footer className="pt-2 pb-4 bg-slate-950/95 border-t border-slate-900/80 backdrop-blur-md flex flex-col items-center">
-        {/* Audio Visualizer Wave */}
-        <div className="h-6 mb-1">
-          <AudioVisualizer
-            active={isRecording || isSpeaking}
-            color={isRecording ? 'rose' : isSpeaking ? 'indigo' : 'indigo'}
-            bars={7}
-          />
-        </div>
-
-        {/* Primary Mic & Interrupt Control */}
-        <div className="relative flex items-center justify-center">
-          <MicButton
-            state={state}
-            duration={recordingDuration}
-            onToggle={handleToggleMic}
-            disabled={!isServerHealthy}
-          />
-
-          {(isSpeaking || isRecording) && (
-            <button
-              type="button"
-              onClick={handleStop}
-              title="Interrupt playback or recording"
-              className="absolute right-[-48px] top-8 p-2.5 rounded-full bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-300 hover:text-white transition-all shadow-md active:scale-95"
-            >
-              <Square className="w-4 h-4 fill-current" />
-            </button>
-          )}
-        </div>
-
-        {/* Fallback Text Input */}
-        <TextInput
-          onSend={handleSendTextMessage}
-          disabled={isRecording || isProcessing || isSpeaking}
-          placeholder={
-            isPermissionDenied
-              ? 'Mic blocked: Type your question here...'
-              : 'Tap mic or type a question...'
-          }
-        />
-
-        <div className="text-[10px] text-slate-500 flex items-center gap-1.5 mt-1 tracking-tight">
-          <span>Groq Whisper</span>
-          <span>•</span>
-          <span>Llama 3.3 70B</span>
-          <span>•</span>
-          <span>Edge-TTS</span>
-        </div>
-      </footer>
+      {/* Integrated Chat Bar: Text Input with Mic beside Send Button */}
+      <TextInput
+        onSend={handleSendTextMessage}
+        disabled={isRecording || isProcessing}
+        placeholder={
+          isPermissionDenied
+            ? 'Mic blocked: Type your question here...'
+            : 'Ask Santhosh anything or tap mic...'
+        }
+        state={state}
+        duration={recordingDuration}
+        onToggleMic={handleToggleMic}
+        onStop={handleStop}
+        isServerHealthy={isServerHealthy}
+      />
 
       {/* Info / Architecture Modal */}
       {showInfoModal && (
