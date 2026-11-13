@@ -178,3 +178,4 @@ export function useAudioPlayer(): UseAudioPlayerResult {
     playerError,
   };
 }
+

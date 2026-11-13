@@ -145,12 +145,20 @@ if static_dir.is_dir() and (static_dir / "index.html").exists():
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
-        # Don't hijack API routes
-        if full_path.startswith("api/"):
-            raise HTTPException(status_code=404, detail="API route not found")
-        file_path = static_dir / full_path
-        if file_path.is_file():
-            return FileResponse(str(file_path))
+        # Don't hijack API or documentation routes
+        if full_path == "api" or full_path.startswith("api/") or full_path in ("docs", "redoc", "openapi.json"):
+            raise HTTPException(status_code=404, detail="Route not found")
+
+        base_resolved = static_dir.resolve()
+        target_resolved = (static_dir / full_path).resolve()
+
+        # Prevent directory traversal attacks
+        try:
+            if target_resolved.is_relative_to(base_resolved) and target_resolved.is_file():
+                return FileResponse(str(target_resolved))
+        except (ValueError, RuntimeError):
+            pass
+
         return FileResponse(str(static_dir / "index.html"))
 else:
     logger.info(f"Static directory {static_dir} not found; running in API-only mode.")

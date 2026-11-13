@@ -124,3 +124,4 @@ export const Transcript: React.FC<TranscriptProps> = ({ messages, isProcessing =
     </div>
   );
 };
+

@@ -53,3 +53,4 @@ async def synthesize_to_bytes(text: str, voice: str = None) -> bytes:
     async for chunk in stream_tts_audio(text, voice):
         audio_chunks.append(chunk)
     return b"".join(audio_chunks)
+

@@ -176,3 +176,4 @@ async def generate_chat_response(
             "code": "LLM_SERVICE_UNAVAILABLE",
         },
     )
+

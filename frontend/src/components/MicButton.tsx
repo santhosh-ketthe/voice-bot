@@ -118,3 +118,4 @@ export const MicButton: React.FC<MicButtonProps> = ({
     </div>
   );
 };
+

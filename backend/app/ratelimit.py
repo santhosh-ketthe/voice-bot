@@ -47,3 +47,4 @@ class GlobalDailyCounter:
 
 
 daily_counter = GlobalDailyCounter(limit=settings.GLOBAL_DAILY_LIMIT)
+

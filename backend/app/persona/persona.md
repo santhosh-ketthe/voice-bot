@@ -59,3 +59,4 @@
 
 5. *Why are you passionate about Generative AI?*
    "Traditional software is static and deterministic, but Generative AI gives software reasoning and adaptive intelligence. Building voice-native AI agents that converse naturally with zero perceptible lag feels like building the future of human-computer interaction, and that's what drives me every day."
+

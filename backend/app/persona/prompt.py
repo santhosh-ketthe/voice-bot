@@ -37,3 +37,4 @@ def build_system_prompt() -> str:
     """Generate the fully rendered system prompt with persona context."""
     persona_context = get_persona_content()
     return SYSTEM_PROMPT.format(persona_context=persona_context).strip()
+

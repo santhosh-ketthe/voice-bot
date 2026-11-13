@@ -194,3 +194,4 @@ The Docker container compiles the React SPA into static assets and FastAPI autom
 - **Growth Areas**: Low-level CUDA/Triton GPU inference kernels, Direct Preference Optimization (DPO), and formal verification of multi-agent state machines.
 - **Limits / Failure**: An early rate-limit exhaustion taught the necessity of multi-tier fallback LLMs, client-side token caps, and pre-warmed caching.
 - **Interview Response Style**: 3-5 conversational sentences (~50-80 words max), spoken first-person, strictly no markdown or bullet points.
+

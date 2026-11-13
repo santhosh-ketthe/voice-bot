@@ -21,3 +21,4 @@ async def transcribe_endpoint(request: Request, audio: UploadFile = File(...)):
 
     text = await transcribe_audio(content, original_filename=filename)
     return {"text": text}
+

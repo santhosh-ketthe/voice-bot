@@ -110,3 +110,4 @@ async def transcribe_audio(audio_bytes: bytes, original_filename: str = "audio.w
                 "code": "STT_UNKNOWN_ERROR",
             },
         )
+
