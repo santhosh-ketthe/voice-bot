@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     # Models
     GROQ_BASE_URL: str = "https://api.groq.com/openai/v1"
     GROQ_MODEL: str = "openai/gpt-oss-20b"
-    GROQ_WHISPER_MODEL: str = "whisper-large-v3-turbo"
+    GROQ_WHISPER_MODEL: str = "whisper-large-v3"
     GEMINI_MODEL: str = "gemini-1.5-flash"
 
     # Voice / Audio

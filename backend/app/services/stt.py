@@ -9,6 +9,15 @@ logger = logging.getLogger(__name__)
 
 _groq_client: Optional[groq.AsyncGroq] = None
 
+MIME_MAP = {
+    "webm": "audio/webm",
+    "mp4": "audio/mp4",
+    "m4a": "audio/m4a",
+    "wav": "audio/wav",
+    "ogg": "audio/ogg",
+    "mp3": "audio/mpeg",
+}
+
 
 def get_groq_client() -> groq.AsyncGroq:
     global _groq_client
@@ -32,25 +41,38 @@ def get_groq_client() -> groq.AsyncGroq:
     retry=retry_if_exception_type((groq.APIConnectionError, groq.RateLimitError)),
     reraise=True,
 )
-async def _execute_transcription(audio_bytes: bytes, filename: str) -> str:
+async def _execute_transcription(audio_bytes: bytes, filename: str, content_type: str) -> str:
     client = get_groq_client()
-    logger.info(f"Sending audio to Groq Whisper ({len(audio_bytes)} bytes, filename: {filename})...")
-    transcription = await client.audio.transcriptions.create(
-        file=(filename, audio_bytes),
-        model=settings.GROQ_WHISPER_MODEL,
-        response_format="json",
-        temperature=0.0,
-        prompt="Santhosh, AI engineer, Covalense Global, Generative AI, LLMs, voicebot, CUDA, RAG, Telugu, Telangana, Hyderabad.",
-    )
-    result_text = transcription.text.strip()
-    logger.info(f"Groq Whisper decoded text: '{result_text}'")
-    return result_text
+    logger.info(f"Sending audio to Groq Whisper: {filename} ({len(audio_bytes)} bytes, {content_type})")
+
+    # Try primary model (whisper-large-v3 for highest accuracy)
+    try:
+        transcription = await client.audio.transcriptions.create(
+            file=(filename, audio_bytes, content_type),
+            model=settings.GROQ_WHISPER_MODEL,
+            response_format="json",
+            temperature=0.0,
+        )
+        result_text = transcription.text.strip()
+        logger.info(f"Groq Whisper transcription result: '{result_text}'")
+        return result_text
+    except Exception as e:
+        logger.warning(f"Whisper primary model ({settings.GROQ_WHISPER_MODEL}) failed ({e}); trying whisper-large-v3-turbo...")
+        transcription = await client.audio.transcriptions.create(
+            file=(filename, audio_bytes, content_type),
+            model="whisper-large-v3-turbo",
+            response_format="json",
+            temperature=0.0,
+        )
+        result_text = transcription.text.strip()
+        logger.info(f"Groq Whisper Turbo result: '{result_text}'")
+        return result_text
 
 
 async def transcribe_audio(audio_bytes: bytes, original_filename: str = "audio.webm") -> str:
     """
     Transcribe audio bytes using Groq Whisper.
-    Enforces size limit and file naming for codec hints.
+    Enforces size limits and correct MIME content types.
     """
     size_mb = len(audio_bytes) / (1024 * 1024)
     if size_mb > settings.MAX_AUDIO_SIZE_MB:
@@ -63,7 +85,8 @@ async def transcribe_audio(audio_bytes: bytes, original_filename: str = "audio.w
             },
         )
 
-    if len(audio_bytes) < 1000:
+    # 400 bytes is sufficient for a short valid WebM audio header + payload
+    if len(audio_bytes) < 400:
         raise HTTPException(
             status_code=400,
             detail={
@@ -73,20 +96,22 @@ async def transcribe_audio(audio_bytes: bytes, original_filename: str = "audio.w
             },
         )
 
-    # Ensure a valid file extension is present for Whisper format detection
+    # Resolve extension and explicit audio MIME type
     ext = original_filename.split(".")[-1].lower() if "." in original_filename else "webm"
-    if ext not in ["webm", "mp4", "m4a", "wav", "ogg", "mp3"]:
+    if ext not in MIME_MAP:
         ext = "webm"
+
+    content_type = MIME_MAP[ext]
     filename = f"recording.{ext}"
 
     try:
-        text = await _execute_transcription(audio_bytes, filename)
+        text = await _execute_transcription(audio_bytes, filename, content_type)
         if not text:
             raise HTTPException(
                 status_code=422,
                 detail={
                     "error": "No speech detected",
-                    "userMessage": "No clear speech detected in recording. Please try again.",
+                    "userMessage": "No clear speech detected in recording. Please try speaking again.",
                     "code": "NO_SPEECH_DETECTED",
                 },
             )
@@ -113,4 +138,3 @@ async def transcribe_audio(audio_bytes: bytes, original_filename: str = "audio.w
                 "code": "STT_UNKNOWN_ERROR",
             },
         )
-

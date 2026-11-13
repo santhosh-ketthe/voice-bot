@@ -61,10 +61,9 @@ export function useRecorder(): UseRecorderResult {
         throw new Error('Audio recording is not supported in this browser.');
       }
 
+      // Use clean acoustic constraints without forcing sample rate (avoids driver distortion)
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          channelCount: 1,
-          sampleRate: 48000,
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
@@ -73,18 +72,22 @@ export function useRecorder(): UseRecorderResult {
       streamRef.current = stream;
 
       const mimeType = getSupportedMimeType();
-      const options: MediaRecorderOptions = mimeType ? { mimeType } : {};
+      const options: MediaRecorderOptions = {
+        ...(mimeType ? { mimeType } : {}),
+        audioBitsPerSecond: 128000,
+      };
 
       const recorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = recorder;
 
-      recorder.ondataavailable = (event) => {
+      recorder.ondataavailable = (event: BlobEvent) => {
         if (event.data && event.data.size > 0) {
           chunksRef.current.push(event.data);
         }
       };
 
-      recorder.start(100); // 100ms time slice for responsive data gathering
+      // Continuous buffer recording: delivers unbroken audio frames with intact container header
+      recorder.start();
       startTimeRef.current = Date.now();
       setIsRecording(true);
 
@@ -127,24 +130,20 @@ export function useRecorder(): UseRecorderResult {
         cleanupStream();
         setIsRecording(false);
 
-        // Discard recordings under ~0.35s to prevent accidental taps
-        if (duration < 0.35) {
-          setRecorderError("Didn't catch that, please tap and speak a full sentence.");
+        // Discard recordings under ~0.3s
+        if (duration < 0.3) {
+          setRecorderError("Recording too short. Please speak clearly and tap to finish.");
           resolve(null);
           return;
         }
 
         const mimeType = recorder.mimeType || 'audio/webm';
         const finalBlob = new Blob(chunksRef.current, { type: mimeType });
+        console.log(`[AudioRecorder] Recorded ${finalBlob.size} bytes (${mimeType}) in ${duration.toFixed(1)}s`);
         resolve({ blob: finalBlob, mimeType });
       };
 
       if (recorder.state === 'recording') {
-        try {
-          recorder.requestData();
-        } catch {
-          // ignore
-        }
         recorder.stop();
       }
     });
@@ -170,4 +169,3 @@ export function useRecorder(): UseRecorderResult {
     recorderError,
   };
 }
-

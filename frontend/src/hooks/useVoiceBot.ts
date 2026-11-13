@@ -147,10 +147,12 @@ export function useVoiceBot() {
       try {
         const { blob, mimeType } = recordingResult;
         const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
+        console.log(`[VoiceBot] Uploading ${blob.size} bytes (${mimeType}) for transcription...`);
         const transcribedText = await transcribeAudio(blob, `voice.${extension}`);
+        console.log(`[VoiceBot] Transcription result: "${transcribedText}"`);
 
         if (!transcribedText.trim()) {
-          setErrorMessage("Didn't catch any words. Please try again.");
+          setErrorMessage("Didn't catch any words. Please try speaking again.");
           setState('error');
           return;
         }
