@@ -10,11 +10,9 @@ export function useVoiceBot() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [samples, setSamples] = useState<SampleQuestion[]>([]);
   const [isLoadingSamples, setIsLoadingSamples] = useState(false);
-  const [lastRecordedAudioUrl, setLastRecordedAudioUrl] = useState<string | null>(null);
 
   const recorder = useRecorder();
   const player = useAudioPlayer();
-  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const messagesRef = useRef<ChatMessage[]>(messages);
   messagesRef.current = messages;
@@ -139,10 +137,6 @@ export function useVoiceBot() {
 
     // If currently listening, stop and transcribe
     if (state === 'listening') {
-      if (!previewAudioRef.current) {
-        previewAudioRef.current = new Audio();
-      }
-
       setState('transcribing');
       const recordingResult = await recorder.stopRecording();
       if (!recordingResult) {
@@ -157,17 +151,6 @@ export function useVoiceBot() {
 
       try {
         const { blob, mimeType } = recordingResult;
-        const objectUrl = URL.createObjectURL(blob);
-        setLastRecordedAudioUrl(objectUrl);
-
-        // Attempt playback through unlocked audio element
-        if (previewAudioRef.current) {
-          previewAudioRef.current.src = objectUrl;
-          previewAudioRef.current.play().catch((err) => {
-            console.log('[VoiceBot] Preview autoplay waited for manual click:', err);
-          });
-        }
-
         const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
         console.log(`[VoiceBot] Uploading ${blob.size} bytes (${mimeType}) for transcription...`);
         const transcribedText = await transcribeAudio(blob, `voice.${extension}`);
@@ -249,7 +232,6 @@ export function useVoiceBot() {
     availableDevices: recorder.availableDevices,
     selectedDeviceId: recorder.selectedDeviceId,
     setSelectedDeviceId: recorder.setSelectedDeviceId,
-    lastRecordedAudioUrl,
     handleToggleMic,
     handleSelectStarterChip,
     handleSendTextMessage,

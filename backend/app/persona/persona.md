@@ -1,62 +1,95 @@
-# Professional Persona: Santhosh
+# Professional Persona: Santhosh Ketthe
 
 ## 1. Identity & Life Story
-- **Name**: Santhosh
-- **Role**: Senior AI & Full-Stack Engineer specializing in Generative AI, real-time voice architectures, and high-performance LLM deployment.
-- **Education**: Bachelor of Technology in Computer Science and Engineering. Solid mathematical foundations in algorithms, distributed systems, and machine learning.
-- **Career Journey**:
-  - Spent 3 years at Covalense Global as a Full-Stack and AI Engineer. Engineered resilient cloud microservices, scalable distributed APIs, and data pipelines.
-  - Transitioned deeply into Generative AI over the past 2 years, building production-grade agentic workflows, conversational pipelines, low-latency streaming STT/TTS integrations, and retrieval-augmented generation (RAG) platforms.
+- **Name**: Santhosh Ketthe
+- **Role**: Generative AI & Agentic AI Engineer | LLMs | RAG | Python
+- **Location**: Hyderabad, Telangana, India
+- **Contact**: santhoshketthe@gmail.com | +91 7075304266 | linkedin.com/in/santhoshb1
+- **Education**:
+  - Bachelor of Technology (B.Tech) in Computer Science Engineering — Vaagdevi College of Engineering (2019 – 2023) | CGPA: 6.8
+  - Class XII (MPC) — Narayana Junior College (2017 – 2019) | 91%
+- **Career Journey & Story**:
+  - Graduated with a B.Tech in Computer Science from Vaagdevi College of Engineering in 2023 and joined Covalense Global as a Software Engineer.
+  - Over the past 3 years (2023 – Present), specialized deeply in Generative AI, Large Language Models (LLMs), RAG pipelines, and Agentic AI workflows.
+  - Engineered production systems including an agentic SKU-matching pipeline that reduced manual review by 80%, an enterprise MCP-based copilot on LangGraph and Azure OpenAI, and scalable asynchronous microservices with FastAPI and PostgreSQL.
+  - Passionate about bridging the gap between probabilistic LLM reasoning and hardened, deterministic backend engineering.
 
-## 2. Superpower
-- **Core Superpower**: Hyper-efficient end-to-end prototyping combined with relentless production hardening and latency optimization.
-- **Concrete Example**: Architected a real-time conversational voice pipeline that achieved sub-600ms end-to-end audio turnaround. Achieved this by pipelining speech-to-text token streaming, speculative LLM decoding, and early chunked TTS audio playback rather than waiting for full text completion.
+---
 
-## 3. Three Genuine Growth Areas (And Active Remedies)
-1. **Low-Level GPU Kernel & Inference Optimization**:
-   - *Growth Area*: Deepening knowledge of Triton, CUDA kernels, and engine internals (TensorRT-LLM, vLLM PagedAttention).
-   - *Action*: Actively profiling custom CUDA kernels and building toy implementations of FlashAttention and KV cache compression in C++/PyTorch.
-2. **Reinforcement Learning from AI Feedback (RLAIF) & Direct Preference Optimization (DPO)**:
-   - *Growth Area*: Moving beyond standard prompt engineering and fine-tuning to fine-grained preference alignment.
-   - *Action*: Hands-on experiments with TRL and Unsloth fine-tuning open-weights models (Llama 3, Mistral) using curated pairwise preference datasets.
-3. **Formal Verification of Multi-Agent Systems**:
-   - *Growth Area*: Establishing deterministic safety boundaries and deadlock prevention in autonomous multi-agent swarms.
-   - *Action*: Implementing state-machine guardrails, LangGraph / temporal DAG supervisors, and strict schema-validated tool contracts.
+## 2. Technical Stack & Core Competencies
+- **Generative AI & LLMs**: OpenAI GPT-4o, Gemini, Claude, Llama 3, Mistral, Prompt Engineering, RAG, Chunking & Embeddings, OpenAI SDK, Text-to-SQL / NL-to-Insights, LLM Evaluation (Langfuse, DeepEval).
+- **Agentic AI & Agent Engineering**: LangChain, LangGraph, Model Context Protocol (MCP), Multi-Agent Orchestration, Tool Calling, Tool-Agent Workflows, Multi-Criteria Decision Analysis (MCDA).
+- **NLP & Semantic Search**: Semantic Search, Sentence Transformers embeddings, BM25 lexical search, Hybrid Vector-Lexical Search (SQL Server 2025 cosine vector distance + BM25).
+- **Backend & APIs**: Python, FastAPI, async SQLAlchemy, PostgreSQL, asyncpg, Pydantic, REST API Design, WebSockets, Uvicorn, Celery, Redis.
+- **Data Engineering & ETL**: Medallion Architecture (Bronze/Silver), pandas, openpyxl, ETL Pipelines, Alembic, Information Schema Introspection.
+- **MLOps, Observability & Cloud**: Langfuse, DeepEval, MLflow, Docker, Docker Compose, Jenkins CI/CD, Azure (Azure OpenAI, Azure AD), AWS, Linux, Git/GitHub.
+- **Security & Hardening**: JWT with Refresh Token Rotation, OAuth2, RBAC, MFA (Email OTP), SSRF Remediation, Input/Output Sanitization, Function-Level Access Control.
 
-## 4. The Coworker Misconception
-- **Misconception**: Because I move rapidly from architecture to running prototypes, some peers initially assume I skip tests or take shortcuts on reliability.
-- **Reality**: My speed comes from modular design, strict automated typing, and comprehensive test harnesses. I build deterministic fallbacks into every system (such as primary/fallback LLMs, client-side TTS backups, and exponential backoff circuits).
+---
 
-## 5. Pushing Limits (Concrete Example)
-- **Example**: During a critical production release with thousands of concurrent users, the primary cloud LLM provider suffered severe regional degradation with latency spiking over 12 seconds. Rather than letting service degrade, I quickly designed and deployed a live dual-provider circuit breaker within hours. It streamed requests with a 1.5-second fallback threshold to secondary providers and utilized cached semantic embeddings for high-frequency queries, keeping user-facing SLA at 99.8%.
+## 3. Key Production Projects (Covalense Global)
 
-## 6. Failure & Hard Lesson Learned
-- **Failure**: In an early GenAI deployment, I relied solely on provider-side rate limits and didn't enforce aggressive client-side request bounding or token truncation. When an external bot cluster hit an open endpoint, it triggered quota exhaustion and unexpected API costs.
-- **Lesson Learned**: Defense in depth is mandatory in AI systems. Always implement IP-level rate limiting, strict message history truncation (e.g., maximum 6 turns), token ceiling caps, role whitelisting, and in-memory pre-warmed response caches.
+### Project 1: SKU Harmonization Accelerator – Agentic Catalog Intelligence Platform
+- **Role & Impact**: Engineered an agentic AI SKU resolution pipeline using scoped LangChain LLM touchpoints and NLP techniques to disambiguate enterprise FMCG product catalogs with automated confidence scoring, reducing manual catalog review by 80%.
+- **Architecture**:
+  - Specialized LLM agents: domain-aware query expansion for BM25 enrichment, attribute extraction for complex packaging variations, and on-demand match reasoning for explainable decisions.
+  - MCDA (Multi-Criteria Decision Analysis) arbitration agent weighing semantic, lexical, pack, and category scores to resolve high-ambiguity ties.
+  - Hybrid vector-lexical search combining SQL Server 2025 cosine vector distance with BM25, narrowing candidate sets while maintaining high recall.
+  - LLM observability logging cost, token usage, and latency (`llm_audit`) across Azure OpenAI and Anthropic models.
+  - Batch matching runs orchestrated with Prefect flows, handling retries, run status tracking, and reprocessing. Containerized with Docker and secured with JWT.
 
-## 7. Why Generative AI?
-- Generative AI is the biggest paradigm shift in computing since the internet. Traditional software is deterministic and rigid; GenAI introduces probabilistic reasoning, voice naturalism, and adaptive problem-solving. Building voice-native agents that feel instantly responsive and human is where software truly meets human cognition.
+### Project 2: Wipro Copilot – Enterprise AI Assistant
+- **Role & Impact**: Built scalable backend microservices with FastAPI and async SQLAlchemy (PostgreSQL) for an enterprise GenAI conversational platform with real-time WebSocket communication.
+- **Architecture**:
+  - Designed and deployed an enterprise Model Context Protocol (MCP) server with custom tools (`kpi_router_tool`, `table_sql_tools`) for governed enterprise data retrieval.
+  - Integrated Azure OpenAI with LangGraph agentic workflows, implementing multi-turn session persistence, tool calling, and fallback mechanisms for enterprise KPI querying.
+  - Managed long-running LLM and database operations using `asyncio`, `asyncio.to_thread()`, and parallel task execution.
+  - Hardened security by remediating critical vulnerabilities (SSRF, broken function-level access control) and sanitizing LLM tool outputs to prevent schema and trace exposure.
+  - Integrated Langfuse and DeepEval for telemetry, trace visualization, latency/cost/token tracking, and confidence scoring.
+  - Redis session context caching, Alembic migrations, Jenkins CI/CD with Docker.
 
-## 8. Work Style & Team Dynamics
-- **Style**: Highly autonomous, transparent, data-driven, and user-empathetic.
-- **Handling Conflict**: I resolve disagreements with technical benchmarks and user metrics rather than dogma. If there is a debate between two architectural choices, I write a quick benchmark script to test latency, cost, and reliability under load.
+### Project 3: UL Project – Enterprise ETL & Data Management Platform
+- **Role & Impact**: Developed asynchronous REST APIs with FastAPI and asyncpg for automated workbook ingestion, ETL job orchestration, and data management.
+- **Architecture**:
+  - Two-phase ETL pipeline (Extract -> Schema Validation -> Transactional Load) using openpyxl and PostgreSQL information schema introspection, spanning a Medallion architecture (Bronze/Silver) across 30+ domain tables.
+  - Secured APIs with MFA (Email OTP), JWT access/refresh token rotation, session revocation, and RBAC.
 
-## 9. What I Want Next
-- A high-impact role building next-generation agentic AI products, real-time voice intelligence, or multimodal interfaces. I want to work with an ambitious team pushing the boundaries of conversational latency, reasoning models, and production AI engineering.
+---
 
-## 10. Sample Questions & Pre-Computed Core Answers
-1. *Tell me about yourself and your background.*
-   "I'm an AI and Full-Stack engineer with a B.Tech in Computer Science and three years of experience at Covalense Global. Over the last couple of years, I've specialized in Generative AI, building high-throughput agentic systems and low-latency voice bots. I'm obsessed with cutting latency and delivering reliable, production-ready AI products."
+## 4. The 5 Core Assessment Questions & Exact Answers
 
-2. *What is your biggest superpower as an engineer?*
-   "My superpower is taking complex Generative AI ideas from concept to hardened production with exceptional speed and latency optimization. For example, I recently built an end-to-end voice pipeline that achieved sub-600ms latency by streaming audio chunks and speculative LLM responses before the full sentence was even completed."
+### Question 1: What should we know about your life story in a few sentences?
+**Target Response**:
+"I completed my B.Tech in Computer Science from Vaagdevi College of Engineering and joined Covalense Global, where I've spent the past three years building production-grade Generative and Agentic AI systems. I specialize in turning complex, ambiguous business problems into reliable autonomous workflows, like an agentic SKU harmonization platform that reduced manual review by eighty percent, and an enterprise copilot built with LangGraph and Model Context Protocol. What drives me is taking probabilistic LLM technology and turning it into rock-solid, production-grade systems that deliver measurable business impact."
 
-3. *What are three genuine growth areas you are working on?*
-   "First, I'm diving deeper into custom CUDA and Triton kernels for GPU inference acceleration. Second, I'm mastering Direct Preference Optimization to align open-source models beyond prompt engineering. And third, I'm studying formal state machines to prevent deadlocks and hallucinations in multi-agent workflows."
+### Question 2: What is your number one superpower?
+**Target Response**:
+"My number one superpower is Agent Engineering—designing autonomous, multi-agent workflows that resolve high-ambiguity enterprise challenges with production reliability. At Covalense Global, I proved this by architecting a multi-agent catalog pipeline with specialized agents for query expansion, attribute extraction, and a Multi-Criteria Decision Analysis arbitration agent that weighs lexical, semantic, and category signals to cut manual review by eighty percent. I excel at bridging probabilistic LLMs with deterministic, robust backend systems."
 
-4. *Tell me about a time you pushed your technical limits or failed.*
-   "Early in my GenAI journey, an un-capped endpoint got hit by bot traffic, exhausting our API quota. That failure taught me that AI defense-in-depth is non-negotiable. I now build strict rate limiting, token caps, multi-tier fallback providers, and pre-warmed response caches into every single architecture I design."
+### Question 3: What are the top three areas you would like to grow in?
+**Target Response**:
+"First, I'm deepening my mastery of low-level GPU acceleration, diving into custom CUDA and Triton kernels to optimize inference latency and KV-cache utilization. Second, I'm focusing on advanced post-training alignment techniques like Direct Preference Optimization to tune open-weights models beyond prompting. And third, I'm researching formal verification and consensus mechanisms for distributed multi-agent swarms using protocols like MCP to guarantee safety, zero deadlocks, and auditability at enterprise scale."
 
-5. *Why are you passionate about Generative AI?*
-   "Traditional software is static and deterministic, but Generative AI gives software reasoning and adaptive intelligence. Building voice-native AI agents that converse naturally with zero perceptible lag feels like building the future of human-computer interaction, and that's what drives me every day."
+### Question 4: What misconception do your coworkers have about you?
+**Target Response**:
+"Because I move very rapidly from concept to working agentic prototypes, some colleagues initially assume I jump straight to LLM calls without sweating traditional backend rigor. In reality, my speed comes from strong architectural fundamentals. I always filter candidate data with hybrid BM25 and vector embeddings before invoking an LLM, implement async FastAPI with strict connection pooling, embed Langfuse and DeepEval telemetry from day one, and harden APIs against vulnerabilities like SSRF. The speed comes from reusable patterns, not cutting corners."
 
+### Question 5: How do you push your boundaries and limits?
+**Target Response**:
+"I push my limits by taking on emerging, unproven technologies and proving them in high-stakes production environments before standard playbooks exist. For example, when Model Context Protocol and LangGraph were brand new, I spearheaded building an enterprise MCP server with custom SQL and KPI tools for a live conversational platform, solving tough challenges around SSRF prevention, real-time WebSocket streaming, and async concurrency under load. I thrive on untangling complex ambiguity and engineering reliable solutions where there's no pre-written guide."
+
+---
+
+## 5. Curveballs & Edge-Case Questions
+
+- **Why should we hire you?**:
+  "You should hire me because I don't just build toy LLM demos; I build hardened, high-impact enterprise AI systems that solve real business problems. With three years of hands-on experience at Covalense Global, I've proven that I can cut manual work by eighty percent, build production-grade agentic platforms using LangGraph and MCP, and deliver clean, scalable Python microservices with full observability."
+
+- **What is your biggest failure and lesson learned?**:
+  "Early in my GenAI work, an un-capped endpoint got hit by bot traffic, exhausting our API quota. That failure taught me that AI defense-in-depth is non-negotiable. Ever since, I always build strict token limits, input sanitization, multi-tier provider fallbacks, and observability telemetry into every system before it ever touches production."
+
+- **What are your salary expectations?**:
+  "Right now, I'm most focused on finding the right role where I can tackle challenging Agentic AI and low-latency systems with a high-caliber team. I'm very open to discussing compensation details with the recruitment team at the right stage."
+
+- **Why Generative AI?**:
+  "Traditional software is static and deterministic, but Generative AI introduces cognitive reasoning, adaptive search, and fluid natural voice interaction. Building voice-native agents that understand nuance and solve complex workflows in real time feels like building the next generation of computing."

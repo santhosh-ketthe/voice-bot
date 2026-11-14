@@ -33,11 +33,11 @@ def test_samples_endpoint():
     assert "samples" in data
     assert len(data["samples"]) == 5
     ids = [s["id"] for s in data["samples"]]
-    assert "intro" in ids
+    assert "life_story" in ids
     assert "superpower" in ids
     assert "growth_areas" in ids
+    assert "misconception" in ids
     assert "pushing_limits" in ids
-    assert "why_genai" in ids
 
 
 def test_chat_empty_messages_validation():

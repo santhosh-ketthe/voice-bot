@@ -4,29 +4,29 @@ router = APIRouter(prefix="/api/samples", tags=["samples"])
 
 STARTER_QUESTIONS = [
     {
-        "id": "intro",
-        "question": "Tell me about yourself and your background.",
-        "short_label": "About Me",
+        "id": "life_story",
+        "question": "What should we know about your life story in a few sentences?",
+        "short_label": "Life Story",
     },
     {
         "id": "superpower",
-        "question": "What is your biggest superpower as an engineer?",
-        "short_label": "My Superpower",
+        "question": "What is your number one superpower?",
+        "short_label": "Superpower",
     },
     {
         "id": "growth_areas",
-        "question": "What are three genuine growth areas you are working on?",
+        "question": "What are the top three areas you would like to grow in?",
         "short_label": "Growth Areas",
     },
     {
-        "id": "pushing_limits",
-        "question": "Tell me about a time you pushed your technical limits or failed.",
-        "short_label": "Failure & Lesson",
+        "id": "misconception",
+        "question": "What misconception do your coworkers have about you?",
+        "short_label": "Misconception",
     },
     {
-        "id": "why_genai",
-        "question": "Why are you passionate about Generative AI?",
-        "short_label": "Why GenAI?",
+        "id": "pushing_limits",
+        "question": "How do you push your boundaries and limits?",
+        "short_label": "Pushing Limits",
     },
 ]
 

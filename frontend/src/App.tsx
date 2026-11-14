@@ -24,7 +24,6 @@ export const App: React.FC = () => {
     availableDevices,
     selectedDeviceId,
     setSelectedDeviceId,
-    lastRecordedAudioUrl,
     handleToggleMic,
     handleSelectStarterChip,
     handleSendTextMessage,
@@ -163,7 +162,6 @@ export const App: React.FC = () => {
         state={state}
         duration={recordingDuration}
         audioLevel={audioLevel}
-        lastRecordedAudioUrl={lastRecordedAudioUrl}
         onToggleMic={handleToggleMic}
         onStop={handleStop}
         isServerHealthy={isServerHealthy}
@@ -271,15 +269,6 @@ export const App: React.FC = () => {
                     : 'Tap the mic in the bottom bar to test input.'}
                 </p>
               </div>
-
-              {lastRecordedAudioUrl && (
-                <div className="p-3 rounded-xl bg-slate-950/80 border border-indigo-500/30">
-                  <span className="block font-semibold text-slate-200 mb-1">
-                    Your Last Captured Recording:
-                  </span>
-                  <audio controls src={lastRecordedAudioUrl} className="w-full h-8" />
-                </div>
-              )}
             </div>
 
             <button
