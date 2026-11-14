@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Square, X } from 'lucide-react';
+import { Send, Square, X, Volume2 } from 'lucide-react';
 import { BotState } from '../types';
 import { MicButton } from './MicButton';
 import { AudioVisualizer } from './AudioVisualizer';
@@ -11,6 +11,7 @@ interface TextInputProps {
   state: BotState;
   duration: number;
   audioLevel?: number;
+  lastRecordedAudioUrl?: string | null;
   onToggleMic: () => void;
   onStop: () => void;
   isServerHealthy?: boolean;
@@ -23,6 +24,7 @@ export const TextInput: React.FC<TextInputProps> = ({
   state,
   duration,
   audioLevel = 0,
+  lastRecordedAudioUrl,
   onToggleMic,
   onStop,
   isServerHealthy = true,
@@ -93,8 +95,31 @@ export const TextInput: React.FC<TextInputProps> = ({
           </div>
         </div>
       ) : (
-        /* Standard Chat Input Bar: Text Input + Stop (if speaking) + Mic + Send */
-        <form onSubmit={handleSubmit} className="flex items-center gap-2">
+        <div>
+          {/* Last Recorded Voice Audio Player Preview */}
+          {lastRecordedAudioUrl && (
+            <div className="mb-2.5 flex items-center justify-between gap-3 px-3.5 py-1.5 rounded-xl bg-slate-900/95 border border-indigo-500/30 text-xs shadow-md animate-in fade-in">
+              <div className="flex items-center gap-2.5">
+                <div className="w-6 h-6 rounded-lg bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center">
+                  <Volume2 className="w-3.5 h-3.5 text-indigo-400" />
+                </div>
+                <span className="text-slate-200 font-semibold text-[11px] whitespace-nowrap">
+                  Your Captured Voice:
+                </span>
+                <audio
+                  controls
+                  src={lastRecordedAudioUrl}
+                  className="h-7 w-48 sm:w-72 accent-indigo-500 rounded"
+                />
+              </div>
+              <span className="text-slate-400 text-[10px] hidden sm:inline">
+                Tap play to verify microphone input
+              </span>
+            </div>
+          )}
+
+          {/* Standard Chat Input Bar: Text Input + Stop (if speaking) + Mic + Send */}
+          <form onSubmit={handleSubmit} className="flex items-center gap-2">
           {/* Text Input Field */}
           <div className="relative flex-1">
             <input
@@ -139,6 +164,7 @@ export const TextInput: React.FC<TextInputProps> = ({
             <Send className="w-4 h-4" />
           </button>
         </form>
+      </div>
       )}
       </div>
     </div>

@@ -10,9 +10,11 @@ export function useVoiceBot() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [samples, setSamples] = useState<SampleQuestion[]>([]);
   const [isLoadingSamples, setIsLoadingSamples] = useState(false);
+  const [lastRecordedAudioUrl, setLastRecordedAudioUrl] = useState<string | null>(null);
 
   const recorder = useRecorder();
   const player = useAudioPlayer();
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const messagesRef = useRef<ChatMessage[]>(messages);
   messagesRef.current = messages;
@@ -137,6 +139,10 @@ export function useVoiceBot() {
 
     // If currently listening, stop and transcribe
     if (state === 'listening') {
+      if (!previewAudioRef.current) {
+        previewAudioRef.current = new Audio();
+      }
+
       setState('transcribing');
       const recordingResult = await recorder.stopRecording();
       if (!recordingResult) {
@@ -151,17 +157,15 @@ export function useVoiceBot() {
 
       try {
         const { blob, mimeType } = recordingResult;
+        const objectUrl = URL.createObjectURL(blob);
+        setLastRecordedAudioUrl(objectUrl);
 
-        // Play back captured audio through speakers for testing/verification
-        try {
-          const previewUrl = URL.createObjectURL(blob);
-          const previewAudio = new Audio(previewUrl);
-          previewAudio.onended = () => URL.revokeObjectURL(previewUrl);
-          previewAudio.play().catch((err) => {
-            console.warn('[VoiceBot] Preview autoplay prevented:', err);
+        // Attempt playback through unlocked audio element
+        if (previewAudioRef.current) {
+          previewAudioRef.current.src = objectUrl;
+          previewAudioRef.current.play().catch((err) => {
+            console.log('[VoiceBot] Preview autoplay waited for manual click:', err);
           });
-        } catch (e) {
-          console.warn('[VoiceBot] Audio preview error:', e);
         }
 
         const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
@@ -241,6 +245,7 @@ export function useVoiceBot() {
     recordingDuration: recorder.recordingDuration,
     audioLevel: recorder.audioLevel,
     isPermissionDenied: recorder.isPermissionDenied,
+    lastRecordedAudioUrl,
     handleToggleMic,
     handleSelectStarterChip,
     handleSendTextMessage,

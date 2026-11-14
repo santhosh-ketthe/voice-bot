@@ -86,21 +86,23 @@ export function useRecorder(): UseRecorderResult {
         throw new Error('Audio recording is not supported in this browser.');
       }
 
-      // Request clean audio stream: disable aggressive noise suppression
-      // which on Windows Chrome can zero out voice input
+      // Request standard microphone stream with browser-default gain
       let stream: MediaStream;
       try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch {
         stream = await navigator.mediaDevices.getUserMedia({
           audio: {
-            echoCancellation: false,
-            noiseSuppression: false,
             autoGainControl: true,
           },
         });
-      } catch {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       }
       streamRef.current = stream;
+
+      const tracks = stream.getAudioTracks();
+      if (tracks.length > 0) {
+        console.log(`[AudioRecorder] Connected mic: "${tracks[0].label}" (muted: ${tracks[0].muted}, state: ${tracks[0].readyState})`);
+      }
 
       // Setup Web Audio Analyser for real-time speech/volume detection
       try {

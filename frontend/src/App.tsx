@@ -20,6 +20,7 @@ export const App: React.FC = () => {
     recordingDuration,
     audioLevel,
     isPermissionDenied,
+    lastRecordedAudioUrl,
     handleToggleMic,
     handleSelectStarterChip,
     handleSendTextMessage,
@@ -142,6 +143,7 @@ export const App: React.FC = () => {
         state={state}
         duration={recordingDuration}
         audioLevel={audioLevel}
+        lastRecordedAudioUrl={lastRecordedAudioUrl}
         onToggleMic={handleToggleMic}
         onStop={handleStop}
         isServerHealthy={isServerHealthy}
