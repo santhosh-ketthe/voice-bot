@@ -1,10 +1,19 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+
+export interface AudioInputDevice {
+  deviceId: string;
+  label: string;
+}
 
 export interface UseRecorderResult {
   isRecording: boolean;
   isPermissionDenied: boolean;
   recordingDuration: number;
   audioLevel: number;
+  activeMicLabel: string;
+  availableDevices: AudioInputDevice[];
+  selectedDeviceId: string;
+  setSelectedDeviceId: (id: string) => void;
   startRecording: () => Promise<void>;
   stopRecording: () => Promise<{ blob: Blob; mimeType: string } | null>;
   cancelRecording: () => void;
@@ -16,10 +25,14 @@ export function useRecorder(): UseRecorderResult {
   const [isPermissionDenied, setIsPermissionDenied] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [audioLevel, setAudioLevel] = useState(0);
+  const [activeMicLabel, setActiveMicLabel] = useState<string>('Default Microphone');
+  const [availableDevices, setAvailableDevices] = useState<AudioInputDevice[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
   const [recorderError, setRecorderError] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const meterTrackRef = useRef<MediaStreamTrack | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const startTimeRef = useRef<number>(0);
   const timerIntervalRef = useRef<number | null>(null);
@@ -28,7 +41,33 @@ export function useRecorder(): UseRecorderResult {
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const volumeCheckIntervalRef = useRef<number | null>(null);
-  const maxVolumeRef = useRef<number>(0);
+
+  // Enumerate input devices
+  const refreshDevices = useCallback(async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const audioInputs = devices
+        .filter((d) => d.kind === 'audioinput')
+        .map((d, index) => ({
+          deviceId: d.deviceId,
+          label: d.label || `Microphone ${index + 1}`,
+        }));
+      setAvailableDevices(audioInputs);
+    } catch (e) {
+      console.warn('[AudioRecorder] Failed to list devices:', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshDevices();
+    if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+      navigator.mediaDevices.addEventListener('devicechange', refreshDevices);
+      return () => {
+        navigator.mediaDevices.removeEventListener('devicechange', refreshDevices);
+      };
+    }
+  }, [refreshDevices]);
 
   const getSupportedMimeType = (): string => {
     if (typeof MediaRecorder === 'undefined') return 'audio/webm';
@@ -67,6 +106,15 @@ export function useRecorder(): UseRecorderResult {
     analyserRef.current = null;
     setAudioLevel(0);
 
+    if (meterTrackRef.current) {
+      try {
+        meterTrackRef.current.stop();
+      } catch {
+        // ignore
+      }
+      meterTrackRef.current = null;
+    }
+
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
@@ -79,32 +127,42 @@ export function useRecorder(): UseRecorderResult {
     chunksRef.current = [];
     setRecordingDuration(0);
     setAudioLevel(0);
-    maxVolumeRef.current = 0;
 
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('Audio recording is not supported in this browser.');
       }
 
-      // Request standard microphone stream with browser-default gain
+      // Request microphone stream using chosen device if specified
+      const audioConstraints: MediaTrackConstraints = selectedDeviceId
+        ? { deviceId: { exact: selectedDeviceId } }
+        : {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          };
+
       let stream: MediaStream;
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
       } catch {
-        stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            autoGainControl: true,
-          },
-        });
+        // Fallback to basic audio constraint if exact device fails
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       }
       streamRef.current = stream;
 
       const tracks = stream.getAudioTracks();
-      if (tracks.length > 0) {
-        console.log(`[AudioRecorder] Connected mic: "${tracks[0].label}" (muted: ${tracks[0].muted}, state: ${tracks[0].readyState})`);
+      if (tracks.length === 0) {
+        throw new Error('No audio input track found.');
       }
+      tracks[0].enabled = true;
+      setActiveMicLabel(tracks[0].label || 'Default Microphone');
+      console.log(`[AudioRecorder] Connected mic: "${tracks[0].label}" (muted: ${tracks[0].muted}, state: ${tracks[0].readyState})`);
 
-      // Setup Web Audio Analyser for real-time speech/volume detection
+      // Refresh devices now that permissions are granted (labels are now visible)
+      refreshDevices();
+
+      // ISOLATED METER: Clone track so Web Audio API never touches MediaRecorder track
       try {
         const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
         if (AudioCtx) {
@@ -113,7 +171,12 @@ export function useRecorder(): UseRecorderResult {
           if (audioCtx.state === 'suspended') {
             await audioCtx.resume();
           }
-          const source = audioCtx.createMediaStreamSource(stream);
+
+          const meterTrack = tracks[0].clone();
+          meterTrackRef.current = meterTrack;
+          const meterStream = new MediaStream([meterTrack]);
+
+          const source = audioCtx.createMediaStreamSource(meterStream);
           const analyser = audioCtx.createAnalyser();
           analyser.fftSize = 256;
           source.connect(analyser);
@@ -129,21 +192,17 @@ export function useRecorder(): UseRecorderResult {
               sum += dataArray[i];
             }
             const avg = sum / dataArray.length;
-            if (avg > maxVolumeRef.current) {
-              maxVolumeRef.current = avg;
-            }
-            const normalized = Math.min(100, Math.round((avg / 96) * 100));
+            const normalized = Math.min(100, Math.round((avg / 80) * 100));
             setAudioLevel(normalized);
-          }, 100);
+          }, 80);
         }
       } catch (audioErr) {
-        console.warn('AudioContext volume metering unavailable:', audioErr);
+        console.warn('[AudioRecorder] Volume meter unavailable:', audioErr);
       }
 
       const mimeType = getSupportedMimeType();
       const options: MediaRecorderOptions = {
         ...(mimeType ? { mimeType } : {}),
-        audioBitsPerSecond: 128000,
       };
 
       const recorder = new MediaRecorder(stream, options);
@@ -155,8 +214,8 @@ export function useRecorder(): UseRecorderResult {
         }
       };
 
-      // Deliver regular audio slices every 250ms to ensure full stream capture
-      recorder.start(250);
+      // Start recording cleanly without timeslicing for pristine, non-corrupted container headers
+      recorder.start();
       startTimeRef.current = Date.now();
       setIsRecording(true);
 
@@ -182,7 +241,7 @@ export function useRecorder(): UseRecorderResult {
         setRecorderError(err.message || 'Could not access microphone.');
       }
     }
-  }, [cleanupStream]);
+  }, [selectedDeviceId, refreshDevices, cleanupStream]);
 
   const stopRecording = useCallback((): Promise<{ blob: Blob; mimeType: string } | null> => {
     return new Promise((resolve) => {
@@ -195,36 +254,25 @@ export function useRecorder(): UseRecorderResult {
       }
 
       recorder.onstop = () => {
-        // Small delay to allow final ondataavailable chunk to flush
-        setTimeout(() => {
-          const duration = (Date.now() - startTimeRef.current) / 1000;
-          cleanupStream();
-          setIsRecording(false);
+        const duration = (Date.now() - startTimeRef.current) / 1000;
+        cleanupStream();
+        setIsRecording(false);
 
-          if (!chunksRef.current || chunksRef.current.length === 0) {
-            resolve(null);
-            return;
-          }
+        if (!chunksRef.current || chunksRef.current.length === 0) {
+          console.warn('[AudioRecorder] onstop: No audio chunks received.');
+          resolve(null);
+          return;
+        }
 
-          const mimeType = recorder.mimeType || 'audio/webm';
-          const finalBlob = new Blob(chunksRef.current, { type: mimeType });
+        const mimeType = recorder.mimeType || 'audio/webm';
+        const finalBlob = new Blob(chunksRef.current, { type: mimeType });
 
-          if (finalBlob.size === 0) {
-            resolve(null);
-            return;
-          }
-
-          console.log(`[AudioRecorder] Recorded ${finalBlob.size} bytes (${mimeType}) in ${duration.toFixed(1)}s`);
-          resolve({ blob: finalBlob, mimeType });
-        }, 60);
+        console.log(`[AudioRecorder] Recorded ${finalBlob.size} bytes (${mimeType}) in ${duration.toFixed(1)}s`);
+        resolve({ blob: finalBlob, mimeType });
       };
 
       if (recorder.state === 'recording') {
-        try {
-          recorder.requestData();
-        } catch {
-          // ignore
-        }
+        // Calling stop() cleanly flushes the final audio buffer into ondataavailable before onstop fires
         recorder.stop();
       }
     });
@@ -249,6 +297,10 @@ export function useRecorder(): UseRecorderResult {
     isPermissionDenied,
     recordingDuration,
     audioLevel,
+    activeMicLabel,
+    availableDevices,
+    selectedDeviceId,
+    setSelectedDeviceId,
     startRecording,
     stopRecording,
     cancelRecording,
