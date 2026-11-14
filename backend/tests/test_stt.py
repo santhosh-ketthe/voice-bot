@@ -20,3 +20,4 @@ def test_is_whisper_hallucination():
     assert is_whisper_hallucination("Why should we hire you?") is False
     assert is_whisper_hallucination("How did you push your limits?") is False
     assert is_whisper_hallucination("What is your experience with GenAI?") is False
+

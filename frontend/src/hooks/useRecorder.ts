@@ -196,13 +196,10 @@ export function useRecorder(): UseRecorderResult {
         // Small delay to allow final ondataavailable chunk to flush
         setTimeout(() => {
           const duration = (Date.now() - startTimeRef.current) / 1000;
-          const peakVol = maxVolumeRef.current;
           cleanupStream();
           setIsRecording(false);
 
-          // Discard recordings under ~0.6s
-          if (duration < 0.6) {
-            setRecorderError('Recording too short. Please tap the mic, speak your question, and tap Done.');
+          if (!chunksRef.current || chunksRef.current.length === 0) {
             resolve(null);
             return;
           }
@@ -210,22 +207,12 @@ export function useRecorder(): UseRecorderResult {
           const mimeType = recorder.mimeType || 'audio/webm';
           const finalBlob = new Blob(chunksRef.current, { type: mimeType });
 
-          // Reject empty/silent audio blobs
-          if (finalBlob.size < 4000) {
-            setRecorderError('Recording was too short or quiet. Please speak clearly into your mic.');
+          if (finalBlob.size === 0) {
             resolve(null);
             return;
           }
 
-          // If analyser was active and never detected any sound above noise floor
-          if (analyserRef.current !== null && peakVol < 1.5) {
-            console.warn(`[AudioRecorder] Silence detected: peak volume was only ${peakVol.toFixed(2)}`);
-            setRecorderError('No sound detected from your microphone. Please check your mic connection, unmute, and speak clearly.');
-            resolve(null);
-            return;
-          }
-
-          console.log(`[AudioRecorder] Recorded ${finalBlob.size} bytes (${mimeType}) in ${duration.toFixed(1)}s (peakVol: ${peakVol.toFixed(1)})`);
+          console.log(`[AudioRecorder] Recorded ${finalBlob.size} bytes (${mimeType}) in ${duration.toFixed(1)}s`);
           resolve({ blob: finalBlob, mimeType });
         }, 60);
       };

@@ -156,9 +156,8 @@ export function useVoiceBot() {
         const transcribedText = await transcribeAudio(blob, `voice.${extension}`);
         console.log(`[VoiceBot] Transcription result: "${transcribedText}"`);
 
-        if (!transcribedText.trim()) {
-          setErrorMessage("Didn't catch any words. Please speak clearly and try again.");
-          setState('error');
+        if (!transcribedText || !transcribedText.trim()) {
+          setState('idle');
           return;
         }
 

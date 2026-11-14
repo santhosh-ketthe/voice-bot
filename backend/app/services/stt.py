@@ -130,8 +130,17 @@ async def _execute_transcription(audio_bytes: bytes, filename: str, content_type
 async def transcribe_audio(audio_bytes: bytes, original_filename: str = "audio.webm") -> str:
     """
     Transcribe audio bytes using Groq Whisper.
-    Enforces size limits, content types, and protects against silence hallucinations.
     """
+    if not audio_bytes:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "Empty audio",
+                "userMessage": "No audio received. Please try speaking again.",
+                "code": "EMPTY_AUDIO",
+            },
+        )
+
     size_mb = len(audio_bytes) / (1024 * 1024)
     if size_mb > settings.MAX_AUDIO_SIZE_MB:
         raise HTTPException(
@@ -140,17 +149,6 @@ async def transcribe_audio(audio_bytes: bytes, original_filename: str = "audio.w
                 "error": "Audio file too large",
                 "userMessage": f"Audio file ({size_mb:.1f}MB) exceeds the {settings.MAX_AUDIO_SIZE_MB}MB limit.",
                 "code": "FILE_TOO_LARGE",
-            },
-        )
-
-    # Audio under 2000 bytes has virtually zero audio frames in WebM/WAV container
-    if len(audio_bytes) < 2000:
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "error": "Audio file too short or empty",
-                "userMessage": "Recording was too short. Please tap the mic, speak clearly, and tap Done.",
-                "code": "AUDIO_TOO_SHORT",
             },
         )
 
@@ -164,20 +162,7 @@ async def transcribe_audio(audio_bytes: bytes, original_filename: str = "audio.w
 
     try:
         text = await _execute_transcription(audio_bytes, filename, content_type)
-
-        # Check for empty result or Whisper silence hallucination (e.g. 'you', 'thank you')
-        if not text or is_whisper_hallucination(text):
-            logger.warning(f"Rejected Whisper result as silence/hallucination: '{text}'")
-            raise HTTPException(
-                status_code=422,
-                detail={
-                    "error": "No clear speech detected",
-                    "userMessage": "No clear speech was detected. Please make sure your microphone is unmuted and speak clearly.",
-                    "code": "NO_SPEECH_DETECTED",
-                },
-            )
-
-        return text
+        return text or ""
     except HTTPException:
         raise
     except groq.APIStatusError as e:
