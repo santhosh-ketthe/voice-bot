@@ -151,6 +151,19 @@ export function useVoiceBot() {
 
       try {
         const { blob, mimeType } = recordingResult;
+
+        // Play back captured audio through speakers for testing/verification
+        try {
+          const previewUrl = URL.createObjectURL(blob);
+          const previewAudio = new Audio(previewUrl);
+          previewAudio.onended = () => URL.revokeObjectURL(previewUrl);
+          previewAudio.play().catch((err) => {
+            console.warn('[VoiceBot] Preview autoplay prevented:', err);
+          });
+        } catch (e) {
+          console.warn('[VoiceBot] Audio preview error:', e);
+        }
+
         const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
         console.log(`[VoiceBot] Uploading ${blob.size} bytes (${mimeType}) for transcription...`);
         const transcribedText = await transcribeAudio(blob, `voice.${extension}`);
