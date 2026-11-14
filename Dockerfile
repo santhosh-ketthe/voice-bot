@@ -21,7 +21,7 @@ FROM python:3.11-slim
 # Prevent python from writing pyc files and buffer stdout/stderr
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PORT=8000 \
+    PORT=7860 \
     APP_ENV=production
 
 WORKDIR /app
@@ -42,13 +42,13 @@ COPY backend/ ./backend/
 # Copy built frontend assets from Stage 1 into frontend/dist
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
-# Expose dynamic application port
-EXPOSE 8000
+# Expose dynamic application ports (7860 for Hugging Face Spaces, 8000 for local/Render)
+EXPOSE 7860 8000
 
 # Set Python module path
 ENV PYTHONPATH=/app/backend
 
-# Non-root user for production security
+# Non-root user for production security (User ID 1000 required by Hugging Face Spaces)
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
@@ -57,5 +57,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:${PORT}/api/health || exit 1
 
 # Launch production ASGI server
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-7860}"]
 
