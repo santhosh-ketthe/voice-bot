@@ -20,9 +20,7 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
     ]
 
-    # Rate Limiting & Safety
-    RATE_LIMIT_PER_MINUTE: str = "20/minute"
-    GLOBAL_DAILY_LIMIT: int = 1000
+    # Safety & Audio Limits
     MAX_AUDIO_SIZE_MB: int = 10
     MAX_MESSAGE_HISTORY: int = 6
     MAX_TOKENS: int = 160

@@ -7,10 +7,8 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
-from slowapi.errors import RateLimitExceeded
 
 from app.config import settings
-from app.ratelimit import limiter
 from app.routers import health, transcribe, chat, tts, samples
 
 logging.basicConfig(
@@ -34,25 +32,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Attach SlowAPI limiter
-app.state.limiter = limiter
-
 
 # ---------------------------------------------------------------------------
 # Global Exception Handlers (Standardized readable error format)
 # ---------------------------------------------------------------------------
-@app.exception_handler(RateLimitExceeded)
-async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
-    return JSONResponse(
-        status_code=429,
-        content={
-            "error": "Rate limit exceeded",
-            "userMessage": "You're sending requests too quickly. Please pause for a moment before trying again.",
-            "code": "RATE_LIMIT_EXCEEDED",
-        },
-    )
-
-
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     # Ensure client always receives structured user-facing message

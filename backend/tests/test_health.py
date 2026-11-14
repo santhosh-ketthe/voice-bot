@@ -12,8 +12,6 @@ def test_health_endpoint():
     assert data["ok"] is True
     assert data["status"] == "healthy"
     assert "uptime_seconds" in data
-    assert "quota" in data
-    assert data["quota"]["limit"] > 0
 
 
 def test_root_endpoint():

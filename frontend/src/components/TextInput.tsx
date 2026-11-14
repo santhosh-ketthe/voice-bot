@@ -10,6 +10,7 @@ interface TextInputProps {
   placeholder?: string;
   state: BotState;
   duration: number;
+  audioLevel?: number;
   onToggleMic: () => void;
   onStop: () => void;
   isServerHealthy?: boolean;
@@ -21,6 +22,7 @@ export const TextInput: React.FC<TextInputProps> = ({
   placeholder = 'Type a message or tap mic...',
   state,
   duration,
+  audioLevel = 0,
   onToggleMic,
   onStop,
   isServerHealthy = true,
@@ -65,7 +67,7 @@ export const TextInput: React.FC<TextInputProps> = ({
 
           {/* Mini Waveform Visualizer */}
           <div className="flex-1 max-w-[120px] flex justify-center">
-            <AudioVisualizer active={true} color="rose" bars={5} />
+            <AudioVisualizer active={true} color="rose" bars={5} level={audioLevel} />
           </div>
 
           {/* Controls: Cancel & Finish */}

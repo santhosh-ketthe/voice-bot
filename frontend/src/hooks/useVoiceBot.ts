@@ -140,7 +140,12 @@ export function useVoiceBot() {
       setState('transcribing');
       const recordingResult = await recorder.stopRecording();
       if (!recordingResult) {
-        setState('idle');
+        if (recorder.recorderError) {
+          setErrorMessage(recorder.recorderError);
+          setState('error');
+        } else {
+          setState('idle');
+        }
         return;
       }
 
@@ -152,7 +157,7 @@ export function useVoiceBot() {
         console.log(`[VoiceBot] Transcription result: "${transcribedText}"`);
 
         if (!transcribedText.trim()) {
-          setErrorMessage("Didn't catch any words. Please try speaking again.");
+          setErrorMessage("Didn't catch any words. Please speak clearly and try again.");
           setState('error');
           return;
         }
@@ -162,7 +167,7 @@ export function useVoiceBot() {
         console.error('Transcription error:', err);
         const userMsg =
           (err as APIErrorDetail)?.userMessage ||
-          'Could not transcribe your audio. Please try again or type below.';
+          'Could not transcribe your audio. Please check your mic or type below.';
         setErrorMessage(userMsg);
         setState('error');
       }
@@ -222,6 +227,7 @@ export function useVoiceBot() {
     isSpeaking: state === 'speaking',
     isProcessing: state === 'transcribing' || state === 'thinking',
     recordingDuration: recorder.recordingDuration,
+    audioLevel: recorder.audioLevel,
     isPermissionDenied: recorder.isPermissionDenied,
     handleToggleMic,
     handleSelectStarterChip,

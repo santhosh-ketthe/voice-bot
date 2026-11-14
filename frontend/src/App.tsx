@@ -18,6 +18,7 @@ export const App: React.FC = () => {
     isSpeaking,
     isProcessing,
     recordingDuration,
+    audioLevel,
     isPermissionDenied,
     handleToggleMic,
     handleSelectStarterChip,
@@ -140,6 +141,7 @@ export const App: React.FC = () => {
         }
         state={state}
         duration={recordingDuration}
+        audioLevel={audioLevel}
         onToggleMic={handleToggleMic}
         onStop={handleStop}
         isServerHealthy={isServerHealthy}
@@ -173,7 +175,7 @@ export const App: React.FC = () => {
                 <strong className="text-white">Grounding & Persona:</strong> Grounded strictly in Santhosh's verified engineering career (B.Tech, 3 years at Covalense Global, specialized in GenAI & low-latency voice bots).
               </p>
               <p>
-                <strong className="text-white">Production Hardening:</strong> Built-in rate limiting (20 req/min), daily budget quota, audio duration validation, and pre-warmed response caches.
+                <strong className="text-white">Microphone Health & Safety:</strong> Real-time acoustic volume analysis, Whisper hallucination filters, and audio duration validation.
               </p>
             </div>
 
